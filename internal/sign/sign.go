@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	jose "github.com/dvsekhvalnov/jose2go"
-	Rsa "github.com/dvsekhvalnov/jose2go/keys/rsa"
 	ecc "github.com/dvsekhvalnov/jose2go/keys/ecc"
+	Rsa "github.com/dvsekhvalnov/jose2go/keys/rsa"
 )
 
 // SignHS256 подписывает одну строку payload.
@@ -119,4 +119,3 @@ func SignLinesES256(r io.Reader, w io.Writer, privPEM []byte) error {
 	}
 	return scanner.Err()
 }
-

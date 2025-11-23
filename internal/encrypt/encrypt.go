@@ -56,4 +56,3 @@ func EncryptLinesRSAOAEP_A256GCM(r io.Reader, w io.Writer, pubPEM []byte) error 
 func IsCompactJWE(s string) bool {
 	return len(strings.Split(s, ".")) == 5
 }
-

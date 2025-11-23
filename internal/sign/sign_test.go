@@ -159,4 +159,3 @@ func TestSignLinesES256BadKey(t *testing.T) {
 		t.Fatalf("expected error for empty EC key")
 	}
 }
-

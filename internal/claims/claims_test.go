@@ -78,4 +78,3 @@ func TestEncodeJSONLines(t *testing.T) {
 		t.Fatalf("expected 2 lines, got %d", len(lines))
 	}
 }
-

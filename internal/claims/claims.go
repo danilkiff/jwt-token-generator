@@ -90,4 +90,3 @@ func EncodeJSONLines(cs []Claims) ([]byte, error) {
 	}
 	return out, nil
 }
-

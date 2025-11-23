@@ -28,4 +28,3 @@ func TestRunJwtClaimsInvalidConfig(t *testing.T) {
 		t.Fatalf("expected error about generate claims, got %q", errBuf.String())
 	}
 }
-

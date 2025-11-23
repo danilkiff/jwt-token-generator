@@ -55,4 +55,3 @@ func main() {
 	code := run(os.Args[1:], os.Stdout, os.Stderr)
 	os.Exit(code)
 }
-

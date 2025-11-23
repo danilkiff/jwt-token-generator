@@ -57,4 +57,3 @@ func TestRunJweEncrypt_NoKeyFile(t *testing.T) {
 		t.Fatalf("unexpected stderr: %q", errBuf.String())
 	}
 }
-

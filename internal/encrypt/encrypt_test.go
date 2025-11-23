@@ -106,4 +106,3 @@ func TestIsCompactJWE(t *testing.T) {
 		t.Fatalf("expected false for 3 parts")
 	}
 }
-
