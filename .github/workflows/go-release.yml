@@ -1,0 +1,113 @@
+name: Go Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [ linux, darwin, windows ]
+        goarch: [ amd64, arm64 ]
+        exclude:
+          - goos: windows
+            goarch: arm64
+
+    env:
+      CGO_ENABLED: 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          GOOS=${{ matrix.goos }}
+          GOARCH=${{ matrix.goarch }}
+          EXT=""
+          if [ "$GOOS" = "windows" ]; then
+            EXT=".exe"
+          fi
+
+          TARGET_DIR="dist/${GOOS}-${GOARCH}"
+          mkdir -p "$TARGET_DIR"
+
+          echo "Building for $GOOS/$GOARCH into $TARGET_DIR"
+
+          export GOOS GOARCH
+
+          go build -o "${TARGET_DIR}/jwt-claims${EXT}" ./cmd/jwt-claims
+          go build -o "${TARGET_DIR}/jwt-sign-hs256${EXT}" ./cmd/jwt-sign-hs256
+          go build -o "${TARGET_DIR}/jwt-sign-rs256${EXT}" ./cmd/jwt-sign-rs256
+          go build -o "${TARGET_DIR}/jwt-sign-es256${EXT}" ./cmd/jwt-sign-es256
+          go build -o "${TARGET_DIR}/jwe-encrypt-rsa-oaep-a256gcm${EXT}" ./cmd/jwe-encrypt-rsa-oaep-a256gcm
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          GOOS=${{ matrix.goos }}
+          GOARCH=${{ matrix.goarch }}
+          TARGET_DIR="dist/${GOOS}-${GOARCH}"
+
+          mkdir -p release
+
+          if [ "$GOOS" = "windows" ]; then
+            ARCHIVE_NAME="jwt-tools-${GOOS}-${GOARCH}.zip"
+            (cd "$TARGET_DIR" && zip -r "../release/${ARCHIVE_NAME}" .)
+          else
+            ARCHIVE_NAME="jwt-tools-${GOOS}-${GOARCH}.tar.gz"
+            (cd "$TARGET_DIR" && tar -czf "../release/${ARCHIVE_NAME}" .)
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jwt-tools-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/release/*
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: List downloaded artifacts
+        run: ls -R dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/**/jwt-tools-*.tar.gz
+            dist/**/jwt-tools-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
