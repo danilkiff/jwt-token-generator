@@ -77,7 +77,7 @@ func TestSignRS256AndLines(t *testing.T) {
 		t.Fatalf("expected 2 tokens, got %d", len(lines))
 	}
 
-	// проверяем, что jose.Decode умеет декодировать наш токен тем же ключом
+	// ensure jose.Decode can decode the token using the same key
 	block, _ := pem.Decode(privPEM)
 	if block == nil {
 		t.Fatalf("pem.Decode returned nil block")

@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+
+// Package encrypt provides helper functions for encrypting payloads
+// as compact JWE tokens.
 package encrypt
 
 import (
@@ -10,7 +14,8 @@ import (
 	Rsa "github.com/dvsekhvalnov/jose2go/keys/rsa"
 )
 
-// EncryptRSAOAEP_A256GCM шифрует payload (строка) в компактный JWE.
+// EncryptRSAOAEP_A256GCM encrypts a payload string into a compact JWE
+// using RSA-OAEP and A256GCM.
 func EncryptRSAOAEP_A256GCM(payload string, pubPEM []byte) (string, error) {
 	if len(pubPEM) == 0 {
 		return "", fmt.Errorf("public key must not be empty")
@@ -26,7 +31,8 @@ func EncryptRSAOAEP_A256GCM(payload string, pubPEM []byte) (string, error) {
 	return token, nil
 }
 
-// EncryptLinesRSAOAEP_A256GCM шифрует каждую непустую строку из r и пишет JWE в w.
+// EncryptLinesRSAOAEP_A256GCM encrypts each non-empty line from r
+// and writes resulting JWE tokens to w.
 func EncryptLinesRSAOAEP_A256GCM(r io.Reader, w io.Writer, pubPEM []byte) error {
 	if len(pubPEM) == 0 {
 		return fmt.Errorf("public key must not be empty")
@@ -52,7 +58,8 @@ func EncryptLinesRSAOAEP_A256GCM(r io.Reader, w io.Writer, pubPEM []byte) error 
 	return scanner.Err()
 }
 
-// IsCompactJWE возвращает true, если строка похожа на JWE compact (5 частей).
+// IsCompactJWE returns true if the string looks like a compact JWE
+// (5 dot-separated parts).
 func IsCompactJWE(s string) bool {
 	return len(strings.Split(s, ".")) == 5
 }

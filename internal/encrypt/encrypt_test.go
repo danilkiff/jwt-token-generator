@@ -68,7 +68,7 @@ func TestEncryptLinesRSAOAEP_A256GCM(t *testing.T) {
 		if !IsCompactJWE(tok) {
 			t.Fatalf("not a compact JWE: %q", tok)
 		}
-		// проверим, что хотя бы один успешно дешифруется
+		// ensure that at least one token can be successfully decrypted
 		_, _, err := jose.Decode(tok, priv)
 		if err != nil {
 			t.Fatalf("jose.Decode: %v", err)

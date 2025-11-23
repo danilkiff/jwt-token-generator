@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Command jwt-claims generates JSONL-encoded claim sets for use as JWT payloads.
 package main
 
 import (
@@ -9,6 +11,9 @@ import (
 	"github.com/danilkiff/jwt-token-generator/internal/claims"
 )
 
+// run parses CLI flags, builds a claims.Config, generates claims, and
+// writes them as JSONL to stdout. It returns a process exit code
+// (0 on success, non-zero on error).
 func run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("jwt-claims", flag.ContinueOnError)
 	fs.SetOutput(stderr)
@@ -51,6 +56,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
+// main is the entry point that delegates to run and exits with its status code.
 func main() {
 	code := run(os.Args[1:], os.Stdout, os.Stderr)
 	os.Exit(code)

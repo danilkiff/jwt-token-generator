@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+
+// Package sign provides helper functions for signing payloads as JWTs
+// using HS256, RS256, and ES256.
 package sign
 
 import (
@@ -11,7 +15,11 @@ import (
 	Rsa "github.com/dvsekhvalnov/jose2go/keys/rsa"
 )
 
-// SignHS256 подписывает одну строку payload.
+// -----------------------------------------------------------------------------
+// HS256
+// -----------------------------------------------------------------------------
+
+// SignHS256 signs a single payload string using HS256 and a shared secret key.
 func SignHS256(payload string, secret []byte) (string, error) {
 	if len(secret) == 0 {
 		return "", fmt.Errorf("secret must not be empty")
@@ -23,7 +31,8 @@ func SignHS256(payload string, secret []byte) (string, error) {
 	return token, nil
 }
 
-// SignLinesHS256 подписывает каждую непустую строку из r и пишет JWT в w.
+// SignLinesHS256 reads non-empty lines from r, signs each line with HS256,
+// and writes resulting JWTs to w.
 func SignLinesHS256(r io.Reader, w io.Writer, secret []byte) error {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
@@ -42,8 +51,11 @@ func SignLinesHS256(r io.Reader, w io.Writer, secret []byte) error {
 	return scanner.Err()
 }
 
-// ----- RS256 -----
+// -----------------------------------------------------------------------------
+// RS256
+// -----------------------------------------------------------------------------
 
+// parseRSAPrivateKey parses an RSA private key from PEM-encoded bytes.
 func parseRSAPrivateKey(pemBytes []byte) (interface{}, error) {
 	if len(pemBytes) == 0 {
 		return nil, fmt.Errorf("empty RSA private key")
@@ -51,6 +63,8 @@ func parseRSAPrivateKey(pemBytes []byte) (interface{}, error) {
 	return Rsa.ReadPrivate(pemBytes)
 }
 
+// SignRS256 signs a single payload string using RS256 and an RSA private
+// key in PEM format.
 func SignRS256(payload string, privPEM []byte) (string, error) {
 	key, err := parseRSAPrivateKey(privPEM)
 	if err != nil {
@@ -59,6 +73,8 @@ func SignRS256(payload string, privPEM []byte) (string, error) {
 	return jose.Sign(payload, jose.RS256, key)
 }
 
+// SignLinesRS256 reads non-empty lines from r, signs each line with RS256,
+// and writes resulting JWTs to w.
 func SignLinesRS256(r io.Reader, w io.Writer, privPEM []byte) error {
 	key, err := parseRSAPrivateKey(privPEM)
 	if err != nil {
@@ -81,8 +97,11 @@ func SignLinesRS256(r io.Reader, w io.Writer, privPEM []byte) error {
 	return scanner.Err()
 }
 
-// ----- ES256 -----
+// -----------------------------------------------------------------------------
+// ES256
+// -----------------------------------------------------------------------------
 
+// parseECPrivateKey parses an EC private key from PEM-encoded bytes.
 func parseECPrivateKey(pemBytes []byte) (interface{}, error) {
 	if len(pemBytes) == 0 {
 		return nil, fmt.Errorf("empty EC private key")
@@ -90,6 +109,8 @@ func parseECPrivateKey(pemBytes []byte) (interface{}, error) {
 	return ecc.ReadPrivate(pemBytes)
 }
 
+// SignES256 signs a single payload string using ES256 and an EC private
+// key in PEM format.
 func SignES256(payload string, privPEM []byte) (string, error) {
 	key, err := parseECPrivateKey(privPEM)
 	if err != nil {
@@ -98,6 +119,8 @@ func SignES256(payload string, privPEM []byte) (string, error) {
 	return jose.Sign(payload, jose.ES256, key)
 }
 
+// SignLinesES256 reads non-empty lines from r, signs each line with ES256,
+// and writes resulting JWTs to w.
 func SignLinesES256(r io.Reader, w io.Writer, privPEM []byte) error {
 	key, err := parseECPrivateKey(privPEM)
 	if err != nil {

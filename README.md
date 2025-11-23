@@ -40,6 +40,20 @@ jwt-claims -count=1000 |
   jwe-encrypt-rsa-oaep-a256gcm --pub-key-file secrets/rsa-public.pem > output/jwe-tokens.txt
 ```
 
+## Reading for nerds
+
+- JSON Web Token (JWT) – [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519)
+- JSON Web Signature (JWS) – [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515) 
+- JSON Web Encryption (JWE) – [RFC 7516](https://www.rfc-editor.org/rfc/rfc7516) 
+- JSON Web Algorithms (JWA) – [RFC 7518](https://www.rfc-editor.org/rfc/rfc7518) 
+- JOSE Algorithms Registry – [IANA](https://www.iana.org/assignments/jose/jose.xhtml)
+
+Underlying cryptographic primitives: 
+
+- RSA & RSA-OAEP – PKCS #1 v2.2 / [RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) 
+- AES-GCM – [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final) 
+- ECDSA P-256 – [NIST FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final)
+
 ## License
 
 MIT.
