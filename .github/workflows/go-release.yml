@@ -66,11 +66,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           GOOS=${{ matrix.goos }}
           GOARCH=${{ matrix.goarch }}
           TARGET_DIR="dist/${GOOS}-${GOARCH}"
+          RELEASE_DIR="dist/release"
 
-          mkdir -p release
+          mkdir -p "$RELEASE_DIR"
 
           if [ "$GOOS" = "windows" ]; then
             ARCHIVE_NAME="jwt-tools-${GOOS}-${GOARCH}.zip"
@@ -110,4 +112,3 @@ jobs:
             dist/**/jwt-tools-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
