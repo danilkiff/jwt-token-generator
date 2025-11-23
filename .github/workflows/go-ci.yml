@@ -9,27 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Go env
-        run: go env
-
-      - name: Verify go.mod is tidy
-        run: |
-          go mod tidy
-          git diff --exit-code go.mod go.sum
-
-      - name: Run tests with coverage
-        run: |
-          go test ./... -coverprofile=coverage.out
-          go tool cover -func=coverage.out
-
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod, cache: true }
+      - run: go mod tidy && git diff --exit-code go.mod go.sum
+      - run: go test ./... -coverprofile=coverage.out
+      - run: go tool cover -func=coverage.out

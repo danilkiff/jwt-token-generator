@@ -11,9 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
-      fail-fast: false
       matrix:
         goos: [ linux, darwin, windows ]
         goarch: [ amd64, arm64 ]
@@ -25,90 +23,54 @@ jobs:
       CGO_ENABLED: 0
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Run tests
-        run: go test ./...
+      - run: go test ./...
 
-      - name: Build binaries
-        shell: bash
+      - name: Build and package
         run: |
-          set -euo pipefail
-
-          GOOS=${{ matrix.goos }}
-          GOARCH=${{ matrix.goarch }}
+          BUILD_DIR="build-${{ matrix.goos }}-${{ matrix.goarch }}"
+          mkdir -p "$BUILD_DIR"
+          
           EXT=""
-          if [ "$GOOS" = "windows" ]; then
+          if [ "${{ matrix.goos }}" = "windows" ]; then
             EXT=".exe"
           fi
 
-          TARGET_DIR="dist/${GOOS}-${GOARCH}"
-          mkdir -p "$TARGET_DIR"
+          for cmd in jwt-claims jwt-sign-hs256 jwt-sign-rs256 jwt-sign-es256 jwe-encrypt-rsa-oaep-a256gcm; do
+            go build -o "$BUILD_DIR/${cmd}${EXT}" "./cmd/${cmd}"
+          done
+          
+          mkdir -p dist
+          cd "$BUILD_DIR"
 
-          echo "Building for $GOOS/$GOARCH into $TARGET_DIR"
-
-          export GOOS GOARCH
-
-          go build -o "${TARGET_DIR}/jwt-claims${EXT}" ./cmd/jwt-claims
-          go build -o "${TARGET_DIR}/jwt-sign-hs256${EXT}" ./cmd/jwt-sign-hs256
-          go build -o "${TARGET_DIR}/jwt-sign-rs256${EXT}" ./cmd/jwt-sign-rs256
-          go build -o "${TARGET_DIR}/jwt-sign-es256${EXT}" ./cmd/jwt-sign-es256
-          go build -o "${TARGET_DIR}/jwe-encrypt-rsa-oaep-a256gcm${EXT}" ./cmd/jwe-encrypt-rsa-oaep-a256gcm
-
-      - name: Package artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          GOOS=${{ matrix.goos }}
-          GOARCH=${{ matrix.goarch }}
-          TARGET_DIR="dist/${GOOS}-${GOARCH}"
-          RELEASE_DIR="dist/release"
-
-          mkdir -p "$RELEASE_DIR"
-
-          if [ "$GOOS" = "windows" ]; then
-            ARCHIVE_NAME="jwt-tools-${GOOS}-${GOARCH}.zip"
-            (cd "$TARGET_DIR" && zip -r "../release/${ARCHIVE_NAME}" .)
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            zip -r "../dist/jwt-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip" .
           else
-            ARCHIVE_NAME="jwt-tools-${GOOS}-${GOARCH}.tar.gz"
-            (cd "$TARGET_DIR" && tar -czf "../release/${ARCHIVE_NAME}" .)
+            tar -czf "../dist/jwt-tools-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" .
           fi
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: jwt-tools-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/release/*
+          path: dist/jwt-tools-${{ matrix.goos }}-${{ matrix.goarch }}.*
 
   release:
     runs-on: ubuntu-latest
     needs: build
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: artifacts
 
-      - name: List downloaded artifacts
-        run: ls -R dist
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/**/jwt-tools-*.tar.gz
-            dist/**/jwt-tools-*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: artifacts/**/jwt-tools-*
