@@ -1,0 +1,16 @@
+{
+    // README at: https://github.com/devcontainers/templates/tree/main/src/go
+	"name": "Go",
+	"image": "mcr.microsoft.com/devcontainers/go:1.25-bookworm",
+
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+                "streetsidesoftware.code-spell-checker",
+                "ms-vscode.makefile-tools",
+                "golang.go"
+            ]
+		}
+	}
+}
