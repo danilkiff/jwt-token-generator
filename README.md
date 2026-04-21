@@ -15,6 +15,7 @@ and integrates cleanly with shell pipelines and `openssl`.
 - `jwt-sign-hs256` — sign payload lines with HS256.
 - `jwt-sign-rs256` — sign payload lines with RS256 (RSA private key).
 - `jwt-sign-es256` — sign payload lines with ES256 (EC private key).
+- `jwt-sign-eddsa` — sign payload lines with EdDSA (Ed25519 private key).
 
 ### JWE encryption
 
@@ -35,6 +36,10 @@ jwt-claims -count=1000 |
 jwt-claims -count=1000 |
   jwt-sign-es256 --key-file secrets/es256-private.pem > output/es256-tokens.txt
 
+# 1000 EdDSA
+jwt-claims -count=1000 |
+  jwt-sign-eddsa --key-file secrets/ed25519-private.pem > output/eddsa-tokens.txt
+
 # 1000 JWE
 jwt-claims -count=1000 |
   jwe-encrypt-rsa-oaep-a256gcm --pub-key-file secrets/rsa-public.pem > output/jwe-tokens.txt
@@ -53,6 +58,7 @@ Underlying cryptographic primitives:
 - RSA & RSA-OAEP – PKCS #1 v2.2 / [RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) 
 - AES-GCM – [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final) 
 - ECDSA P-256 – [NIST FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final)
+- Ed25519 / EdDSA – [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)
 
 ## License
 

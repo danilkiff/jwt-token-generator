@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 # List of CLI binaries to build.
-BINS := jwt-claims jwt-sign-hs256 jwt-sign-rs256 jwt-sign-es256 jwe-encrypt-rsa-oaep-a256gcm
+BINS := jwt-claims jwt-sign-hs256 jwt-sign-rs256 jwt-sign-es256 jwt-sign-eddsa jwe-encrypt-rsa-oaep-a256gcm
 
 # Directory where built binaries will be placed.
 BIN_DIR := bin

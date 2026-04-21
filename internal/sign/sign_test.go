@@ -3,6 +3,7 @@ package sign
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	crand "crypto/rand"
 	"crypto/rsa"
@@ -157,5 +158,74 @@ func TestSignLinesES256BadKey(t *testing.T) {
 	err := SignLinesES256(strings.NewReader("p"), &bytes.Buffer{}, []byte{})
 	if err == nil {
 		t.Fatalf("expected error for empty EC key")
+	}
+}
+
+// --- EdDSA helpers ---
+
+func genEdPrivatePEM(t *testing.T) []byte {
+	t.Helper()
+	_, priv, err := ed25519.GenerateKey(crand.Reader)
+	if err != nil {
+		t.Fatalf("GenerateKey Ed25519: %v", err)
+	}
+	der, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		t.Fatalf("MarshalPKCS8PrivateKey: %v", err)
+	}
+	block := &pem.Block{Type: "PRIVATE KEY", Bytes: der}
+	return pem.EncodeToMemory(block)
+}
+
+func TestSignEdDSAAndLines(t *testing.T) {
+	privPEM := genEdPrivatePEM(t)
+
+	token, err := SignEdDSA(`{"d":4}`, privPEM)
+	if err != nil {
+		t.Fatalf("SignEdDSA error: %v", err)
+	}
+	if len(strings.Split(token, ".")) != 3 {
+		t.Fatalf("expected 3-part JWT")
+	}
+
+	var buf bytes.Buffer
+	if err := SignLinesEdDSA(strings.NewReader("a\nb\n"), &buf, privPEM); err != nil {
+		t.Fatalf("SignLinesEdDSA error: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected 2 tokens, got %d", len(lines))
+	}
+
+	// verify token can be decoded with the public key
+	block, _ := pem.Decode(privPEM)
+	if block == nil {
+		t.Fatalf("pem.Decode returned nil block")
+	}
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		t.Fatalf("ParsePKCS8PrivateKey: %v", err)
+	}
+	edKey := key.(ed25519.PrivateKey)
+	_, hdr, err := jose.Decode(token, edKey.Public())
+	if err != nil {
+		t.Fatalf("jose.Decode: %v", err)
+	}
+	if hdr["alg"] != "EdDSA" {
+		t.Fatalf("expected alg=EdDSA, got %v", hdr["alg"])
+	}
+}
+
+func TestSignEdDSABadKey(t *testing.T) {
+	_, err := SignEdDSA("p", []byte("nope"))
+	if err == nil {
+		t.Fatalf("expected error for bad Ed25519 key")
+	}
+}
+
+func TestSignLinesEdDSABadKey(t *testing.T) {
+	err := SignLinesEdDSA(strings.NewReader("p"), &bytes.Buffer{}, []byte{})
+	if err == nil {
+		t.Fatalf("expected error for empty Ed25519 key")
 	}
 }

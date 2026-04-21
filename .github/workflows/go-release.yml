@@ -42,7 +42,7 @@ jobs:
             EXT=".exe"
           fi
 
-          for cmd in jwt-claims jwt-sign-hs256 jwt-sign-rs256 jwt-sign-es256 jwe-encrypt-rsa-oaep-a256gcm; do
+          for cmd in jwt-claims jwt-sign-hs256 jwt-sign-rs256 jwt-sign-es256 jwt-sign-eddsa jwe-encrypt-rsa-oaep-a256gcm; do
             go build -o "$BUILD_DIR/${cmd}${EXT}" "./cmd/${cmd}"
           done
           
